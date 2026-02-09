@@ -202,6 +202,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.currentMode = 0
 			m.lockedIn = false
 			m.paused = false
+			m.manualInput = false
 
 			m.timer.totalFocusTime = time.Duration(0)
 			m.timer.remainingFocusTime = time.Duration(0)
@@ -256,6 +257,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key, ok := msg.(tea.KeyMsg); ok && key.String() == "enter" {
 			m.startTimer(m.textInput.Value())
 			m.manualInput = false
+			// m.paused = false
 			return m, nil
 		}
 		m.textInput, cmd = m.textInput.Update(msg)
@@ -279,9 +281,14 @@ func tickTimer() tea.Cmd {
 }
 
 func (m *model) startTimer(choice string) tea.Cmd {
+	if !strings.Contains(choice, "/") {
+		return nil
+	}
+
 	if choice == "input" {
 		m.manualInput = true
 	}
+
 	splitChoice := strings.Split(choice, "/")
 	focusTime, _ := strconv.Atoi(splitChoice[0])
 	breakTime, _ := strconv.Atoi(splitChoice[1])
@@ -322,7 +329,7 @@ func playSound() tea.Cmd {
 func (m model) View() string {
 	s := ""
 
-	if !m.lockedIn && !m.continueModal && !m.paused {
+	if !m.lockedIn && !m.continueModal && !m.paused && !m.manualInput {
 		s += headerStyle.Render("Choose a pomodoro cycle") + "\n\n"
 		for i, choice := range m.choices {
 
