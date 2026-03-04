@@ -328,6 +328,11 @@ func playSound() tea.Cmd {
 
 func (m model) View() string {
 	s := ""
+	s += headerStyle.Render(`
+┌─┐┌─┐┌┬┐┌─┐┌┬┐┌─┐┬─┐┌─┐
+├─┘│ │││││ │ │││ │├┬┘│ │
+┴  └─┘┴ ┴└─┘─┴┘└─┘┴└─└─┘`)
+	s += "\n"
 
 	if !m.lockedIn && !m.continueModal && !m.paused && !m.manualInput {
 		s += headerStyle.Render("Choose a pomodoro cycle") + "\n\n"
