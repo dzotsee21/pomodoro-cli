@@ -109,7 +109,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
-		m.progress.Width = msg.Width - 70
+		const maxWidth = 50
+		if msg.Width-20 < maxWidth {
+			m.progress.Width = maxWidth - 20
+		} else {
+			m.progress.Width = maxWidth
+		}
+
 		m.help.Width = msg.Width
 		return m, nil
 
