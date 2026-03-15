@@ -226,6 +226,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case msg.String() == "enter" || msg.String() == " ":
 			if !m.continueModal {
+				if m.lockedIn {
+					return m, nil
+				}
+
 				pomodoroChoice := m.choices[m.cursor]
 				if pomodoroChoice != "input" {
 					m.cursor = 0
@@ -321,9 +325,9 @@ func playSound() tea.Cmd {
 			return nil
 		}
 
-		_ = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+		resampled := beep.Resample(4, format.SampleRate, beep.SampleRate(44100), streamer)
 
-		speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		speaker.Play(beep.Seq(resampled, beep.Callback(func() {
 			streamer.Close()
 			f.Close()
 		})))
@@ -398,6 +402,9 @@ func (m model) View() string {
 }
 
 func main() {
+	sr := beep.SampleRate(44100)
+	speaker.Init(sr, sr.N(time.Second/10))
+
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
