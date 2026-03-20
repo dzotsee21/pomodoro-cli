@@ -85,10 +85,11 @@ func initialModel() model {
 
 	p := progress.New(progress.WithGradient("#e43543", "#e61631"))
 	return model{
-		textInput: ti,
-		choices:   []string{"35/7", "60/15", "120/35", "input"},
-		progress:  p,
-		help:      help.New(),
+		textInput:   ti,
+		choices:     []string{"35/7", "60/15", "120/35", "input"},
+		currentMode: -1,
+		progress:    p,
+		help:        help.New(),
 		keys: keyMap{
 			Quit:  key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit")),
 			Up:    key.NewBinding(key.WithKeys("↑/k"), key.WithHelp("↑/k", "move up")),
@@ -205,7 +206,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, m.keys.Reset):
-			m.currentMode = 0
+			m.currentMode = -1
 			m.lockedIn = false
 			m.paused = false
 			m.manualInput = false
@@ -221,14 +222,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, progressCmd
 
 		case key.Matches(msg, m.keys.Pause):
-			m.paused = !m.paused
-			m.lockedIn = !m.lockedIn
+			if m.currentMode != -1 {
+				m.paused = !m.paused
+				m.lockedIn = !m.lockedIn
+			}
 
 		case msg.String() == "enter" || msg.String() == " ":
 			if !m.continueModal {
 				if m.lockedIn {
 					return m, nil
 				}
+
+				m.currentMode = 0
 
 				pomodoroChoice := m.choices[m.cursor]
 				if pomodoroChoice != "input" {
@@ -251,7 +256,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.lockedIn = true
 					m.paused = false
 				} else {
-					m.currentMode = 0
+					m.currentMode = -1
 					m.lockedIn = false
 					m.paused = false
 				}
